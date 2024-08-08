@@ -37,7 +37,7 @@ function App() {
               required
             />
             <button className="submit-button" type="submit">
-              Analyze Now <FontAwesomeIcon icon={faPaperPlane} />
+              Analyze Sentiment <FontAwesomeIcon icon={faPaperPlane} />
             </button>
           </form>
         </div>
