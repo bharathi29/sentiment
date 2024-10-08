@@ -2,28 +2,54 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+require('dotenv').config(); // Load environment variables
 
 const app = express();
-
-app.use(bodyParser.json());
 app.use(cors());
+app.use(bodyParser.json());
 
-// MongoDB connection
-mongoose.connect('mongodb://localhost:27017/sentiment-analysis', { useNewUrlParser: true, useUnifiedTopology: true });
+// MongoDB Atlas connection
+const mongoURI = process.env.MONGO_URI;
 
-const reviewSchema = new mongoose.Schema({
-  review: String
+console.log('MongoDB URI:', mongoURI);
+
+if (!mongoURI) {
+  console.error('Error: MONGO_URI is not defined in .env file');
+  process.exit(1);
+}
+
+mongoose.connect(mongoURI)
+  .then(() => console.log('MongoDB Atlas connected successfully'))
+  .catch((err) => console.error('MongoDB Atlas connection error:', err));
+
+// Define the sentiment schema and model
+const sentimentSchema = new mongoose.Schema({
+  review: String,
+  score: Number,
+  label: String,
 });
 
-const Review = mongoose.model('Review', reviewSchema);
+const Sentiment = mongoose.model('Sentiment', sentimentSchema);
 
-app.post('/api/reviews', async (req, res) => {
-  const { review } = req.body;
-  const newReview = new Review({ review });
-  await newReview.save();
-  res.json(newReview);
+// Endpoint to accept sentiment analysis data
+app.post('/api/sentiment', async (req, res) => {
+  try {
+    const { review, score, label } = req.body;
+
+    const newSentiment = new Sentiment({ review, score, label });
+
+    // Save the sentiment data using async/await
+    await newSentiment.save();
+
+    res.status(200).send('Sentiment data saved successfully');
+  } catch (err) {
+    console.error('Error saving sentiment data:', err);
+    res.status(500).send('Error saving sentiment data');
+  }
 });
 
-app.listen(5000, () => {
-  console.log('Server is running on port 5000');
+// Start the server
+const port = process.env.PORT || 5000;
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });
