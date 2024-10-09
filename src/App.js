@@ -1,26 +1,26 @@
 import React, { useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './App.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCommentDots, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+import ResultPage from './ResultPage';
 
-function App() {
+function HomePage() {
   const [review, setReview] = useState('');
-  const [responseMessage, setResponseMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   // Function to handle form submission
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-    setResponseMessage('');
-    
+
     try {
       const response = await axios.post('http://localhost:5000/api/sentiment', { review });
-      setResponseMessage('Review submitted successfully! Sentiment analysis in progress.');
-      console.log('Review submitted successfully:', response.data);
+      // Navigate to result page and pass sentiment data via state
+      navigate('/result', { state: { sentiment: response.data } });
     } catch (error) {
-      setResponseMessage('Failed to submit review. Please try again.');
       console.error('Error while submitting review:', error);
     } finally {
       setReview('');
@@ -51,12 +51,20 @@ function App() {
               {loading ? 'Submitting...' : 'Analyze Sentiment'} <FontAwesomeIcon icon={faPaperPlane} />
             </button>
           </form>
-
-          {/* Feedback message */}
-          {responseMessage && <p className="response-message">{responseMessage}</p>}
         </div>
       </header>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/result" element={<ResultPage />} />
+      </Routes>
+    </Router>
   );
 }
 

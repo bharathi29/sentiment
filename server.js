@@ -2,7 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-require('dotenv').config(); // Load environment variables
+const { exec } = require('child_process');
+require('dotenv').config();
 
 const app = express();
 app.use(cors());
@@ -33,19 +34,37 @@ const Sentiment = mongoose.model('Sentiment', sentimentSchema);
 
 // Endpoint to accept sentiment analysis data
 app.post('/api/sentiment', async (req, res) => {
-  try {
-    const { review, score, label } = req.body;
+  const { review } = req.body;
 
-    const newSentiment = new Sentiment({ review, score, label });
+  // Execute Python script and pass the review as an argument
+  exec(`python3 sentiment_analysis.py "${review}"`, (error, stdout, stderr) => {
+    if (error) {
+      console.error('Error executing Python script:', error);
+      return res.status(500).send('Error executing sentiment analysis');
+    }
 
-    // Save the sentiment data using async/await
-    await newSentiment.save();
+    try {
+      // Parse the JSON output from Python
+      const sentimentResult = JSON.parse(stdout);
 
-    res.status(200).send('Sentiment data saved successfully');
-  } catch (err) {
-    console.error('Error saving sentiment data:', err);
-    res.status(500).send('Error saving sentiment data');
-  }
+      // Save the sentiment data in MongoDB
+      const newSentiment = new Sentiment({
+        review,
+        score: sentimentResult.score,
+        label: sentimentResult.label,
+      });
+
+      newSentiment.save()
+        .then(() => res.status(200).json(sentimentResult))
+        .catch((err) => {
+          console.error('Error saving sentiment data:', err);
+          res.status(500).send('Error saving sentiment data');
+        });
+    } catch (err) {
+      console.error('Error parsing Python output:', err);
+      res.status(500).send('Error parsing sentiment analysis result');
+    }
+  });
 });
 
 // Start the server
