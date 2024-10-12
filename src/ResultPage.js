@@ -15,7 +15,6 @@ function ResultPage() {
           {sentiment ? (
             <div className="sentiment-result">
               <p><strong>Sentiment Label:</strong> {sentiment.label}</p>
-              <p><strong>Sentiment Score:</strong> {sentiment.score}</p>
             </div>
           ) : (
             <p>No sentiment data available.</p>
