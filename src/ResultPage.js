@@ -1,9 +1,10 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
+import './App.css'; // Add necessary CSS styling if needed
 
 function ResultPage() {
   const location = useLocation();
-  const { sentiment } = location.state || {};  // Get the sentiment data from the state
+  const { sentiment, review } = location.state || {}; // Get both sentiment and review from state
 
   return (
     <div className="app-wrapper">
@@ -14,7 +15,9 @@ function ResultPage() {
           {/* Display sentiment result */}
           {sentiment ? (
             <div className="sentiment-result">
-              <p><strong>Sentiment Label:</strong> {sentiment.label}</p>
+              <p><strong>Review:</strong> {review}</p> {/* Display the original review */}
+              <p><strong>Sentiment Label:</strong> {sentiment.label}</p> {/* Display the sentiment label */}
+    
             </div>
           ) : (
             <p>No sentiment data available.</p>

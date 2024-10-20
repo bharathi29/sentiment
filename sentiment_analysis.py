@@ -34,6 +34,4 @@ if __name__ == '__main__':
     # Read the review from command line argument
     review = sys.argv[1]
     result = analyze_sentiment(review)
-    
-    # Output the result as JSON
     print(json.dumps(result))

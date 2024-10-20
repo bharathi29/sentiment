@@ -18,8 +18,8 @@ function HomePage() {
 
     try {
       const response = await axios.post('http://localhost:5000/api/sentiment', { review });
-      // Navigate to result page and pass sentiment data via state
-      navigate('/result', { state: { sentiment: response.data } });
+      // Navigate to result page and pass sentiment data and review text via state
+      navigate('/result', { state: { sentiment: response.data, review } });
     } catch (error) {
       console.error('Error while submitting review:', error);
     } finally {
